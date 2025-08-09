@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Attendance Scanner</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiT2ZmbGluZSBBdHRlbmRhbmNlIFNjYW5uZXIiLCJzaG9ydF9uYW1lIjoiQXR0ZW5kYW5jZSIsInN0YXJ0X3VybCI6Ii8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjZmNmY2Y5IiwidGhlbWVfY29sb3IiOiIjMjE4MDhkIn0=">
+    <meta name="theme-color" content="#21808d">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">Attendance Scanner</h1>
+                <div class="status-indicator">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span class="status-text" id="statusText">Online</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Scanner Page -->
+            <div class="page active" id="scannerPage">
+                <div class="scanner-container">
+                    <div class="camera-viewfinder">
+                        <div class="scan-overlay">
+                            <div class="scan-frame">
+                                <div class="corner top-left"></div>
+                                <div class="corner top-right"></div>
+                                <div class="corner bottom-left"></div>
+                                <div class="corner bottom-right"></div>
+                            </div>
+                            <p class="scan-instruction">Position QR code within frame</p>
+                        </div>
+                    </div>
+                    
+                    <div class="scan-controls">
+                        <button class="btn btn--primary btn--full-width" id="scanBtn">
+                            📱 Scan QR Code
+                        </button>
+                        <div class="file-upload-container">
+                            <input type="file" id="qrFileInput" accept="image/*" class="file-input">
+                            <label for="qrFileInput" class="btn btn--secondary btn--full-width">
+                                📁 Upload QR Image
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="quick-stats">
+                        <div class="stat-card">
+                            <div class="stat-number" id="todayScans">4</div>
+                            <div class="stat-label">Today's Scans</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="pendingSync">2</div>
+                            <div class="stat-label">Pending Sync</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Database Page -->
+            <div class="page" id="studentPage">
+                <div class="page-header">
+                    <h2>Student Database</h2>
+                    <button class="btn btn--primary" id="addStudentBtn">+ Add Student</button>
+                </div>
+                
+                <div class="search-container">
+                    <input type="text" class="form-control" id="studentSearch" placeholder="Search students...">
+                </div>
+
+                <div class="student-list" id="studentList">
+                    <!-- Students will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Attendance Records Page -->
+            <div class="page" id="recordsPage">
+                <div class="page-header">
+                    <h2>Attendance Records</h2>
+                    <div class="filter-controls">
+                        <select class="form-control" id="statusFilter">
+                            <option value="all">All Records</option>
+                            <option value="synced">Synced</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="records-list" id="recordsList">
+                    <!-- Records will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div class="page" id="settingsPage">
+                <div class="page-header">
+                    <h2>Settings & Sync</h2>
+                </div>
+
+                <div class="settings-sections">
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>Google Sheets Integration</h3>
+                            <div class="integration-status">
+                                <span class="status status--success" id="sheetsStatus">Connected</span>
+                                <p class="integration-info">Last sync: <span id="lastSyncTime">Today, 9:30 AM</span></p>
+                            </div>
+                            <button class="btn btn--primary" id="manualSyncBtn">🔄 Manual Sync</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>Sync Statistics</h3>
+                            <div class="sync-stats">
+                                <div class="stat-row">
+                                    <span>Total Records:</span>
+                                    <span id="totalRecords">5</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span>Synced:</span>
+                                    <span id="syncedRecords">3</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span>Pending:</span>
+                                    <span id="pendingRecords">2</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>App Features</h3>
+                            <div class="feature-list">
+                                <div class="feature-item">
+                                    <span>📱 Install as PWA</span>
+                                    <button class="btn btn--outline btn--sm" id="installBtn">Install</button>
+                                </div>
+                                <div class="feature-item">
+                                    <span>📊 System Architecture</span>
+                                    <button class="btn btn--outline btn--sm" id="architectureBtn">View</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-page="scannerPage">
+                <span class="nav-icon">📱</span>
+                <span class="nav-label">Scanner</span>
+            </button>
+            <button class="nav-item" data-page="studentPage">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Students</span>
+            </button>
+            <button class="nav-item" data-page="recordsPage">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Records</span>
+            </button>
+            <button class="nav-item" data-page="settingsPage">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal hidden" id="scanResultModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Scan Result</h3>
+                <button class="modal-close" id="closeScanModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="scanResultContent">
+                    <!-- Scan result will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal hidden" id="architectureModal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>System Architecture</h3>
+                <button class="modal-close" id="closeArchitectureModal">×</button>
+            </div>
+            <div class="modal-body">
+                <img src="https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/534af12e5a5b51ac3470d509f5d9e683/3f3fa63c-4b48-4fe3-a83d-4f8426d8ed53/f8109f33.png" alt="System Architecture" style="width: 100%; height: auto;">
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
